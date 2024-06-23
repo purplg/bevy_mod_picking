@@ -6,8 +6,8 @@ use crate::{
     backend::HitData,
     focus::{HoverMap, PreviousHoverMap},
     pointer::{
-        self, InputMove, InputPress, Location, PointerButton, PointerId, PointerLocation,
-        PointerMap, PressDirection,
+        self, InputMove, InputPress, InputScroll, Location, PointerButton, PointerId,
+        PointerLocation, PointerMap, PressDirection, ScrollDirection,
     },
 };
 use bevy_derive::{Deref, DerefMut};
@@ -194,10 +194,20 @@ pub struct Drop {
     pub hit: HitData,
 }
 
+/// Fires while a pointer scrolls over the `target` entity.
+#[derive(Clone, PartialEq, Debug, Reflect)]
+pub struct Scroll {
+    /// Information about the picking intersection.
+    pub hit: HitData,
+    /// Direction the mouse wheel has scrolled since the last move event.
+    pub delta: Vec2,
+}
+
 /// Generates pointer events from input and focus data
 pub fn pointer_events(
     // Input
     mut input_presses: EventReader<InputPress>,
+    mut input_scroll: EventReader<InputScroll>,
     mut input_moves: EventReader<pointer::InputMove>,
     pointer_map: Res<PointerMap>,
     pointers: Query<&PointerLocation>,
@@ -205,6 +215,7 @@ pub fn pointer_events(
     previous_hover_map: Res<PreviousHoverMap>,
     // Output
     mut pointer_move: EventWriter<Pointer<Move>>,
+    mut pointer_scroll: EventWriter<Pointer<Scroll>>,
     mut pointer_over: EventWriter<Pointer<Over>>,
     mut pointer_out: EventWriter<Pointer<Out>>,
     mut pointer_up: EventWriter<Pointer<Up>>,
@@ -283,6 +294,38 @@ pub fn pointer_events(
                     Down { button, hit },
                 ));
             }
+        }
+    }
+
+    for scroll_event in input_scroll.read() {
+        // TODO Do we need to use previous_hover_map like press_event above?
+        for (hovered_entity, hit) in hover_map
+            .get(&scroll_event.pointer_id)
+            .iter()
+            .flat_map(|h| h.iter().map(|(entity, data)| (*entity, data.clone())))
+        {
+            let Some(location) = pointer_location(scroll_event.pointer_id) else {
+                debug!(
+                    "Unable to get location for pointer {:?} during event {:?}",
+                    scroll_event.pointer_id, scroll_event
+                );
+                continue;
+            };
+            pointer_scroll.send(Pointer::new(
+                scroll_event.pointer_id,
+                location,
+                hovered_entity,
+                Scroll {
+                    hit,
+                    delta: match scroll_event.direction {
+                        // TODO verify direction values
+                        ScrollDirection::Down => Vec2::NEG_Y,
+                        ScrollDirection::Up => Vec2::Y,
+                        ScrollDirection::Right => Vec2::X,
+                        ScrollDirection::Left => Vec2::NEG_X,
+                    },
+                },
+            ));
         }
     }
 

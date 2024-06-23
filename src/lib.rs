@@ -223,7 +223,7 @@ pub mod prelude {
         backends,
         events::{
             Click, Down, Drag, DragEnd, DragEnter, DragLeave, DragOver, DragStart, Drop, Move, Out,
-            Over, Pointer, Up,
+            Over, Pointer, Up, Scroll,
         },
         focus::PickingInteraction,
         input::prelude::*,

@@ -181,6 +181,7 @@ impl Plugin for CorePlugin {
             .init_resource::<pointer::PointerMap>()
             .init_resource::<backend::ray::RayMap>()
             .add_event::<pointer::InputPress>()
+            .add_event::<pointer::InputScroll>()
             .add_event::<pointer::InputMove>()
             .add_event::<backend::PointerHits>()
             .add_systems(
@@ -188,6 +189,7 @@ impl Plugin for CorePlugin {
                 (
                     pointer::update_pointer_map,
                     pointer::InputMove::receive,
+                    pointer::InputScroll::receive,
                     pointer::InputPress::receive,
                     backend::ray::RayMap::repopulate,
                 )
@@ -208,6 +210,7 @@ impl Plugin for CorePlugin {
             )
             .register_type::<pointer::PointerId>()
             .register_type::<pointer::PointerLocation>()
+            .register_type::<pointer::PointerScroll>()
             .register_type::<pointer::PointerPress>()
             .register_type::<pointer::PointerInteraction>()
             .register_type::<Pickable>()
@@ -246,6 +249,7 @@ impl Plugin for InteractionPlugin {
                 EventListenerPlugin::<Pointer<Up>>::default(),
                 EventListenerPlugin::<Pointer<Click>>::default(),
                 EventListenerPlugin::<Pointer<Move>>::default(),
+                EventListenerPlugin::<Pointer<Scroll>>::default(),
                 EventListenerPlugin::<Pointer<DragStart>>::default(),
                 EventListenerPlugin::<Pointer<Drag>>::default(),
                 EventListenerPlugin::<Pointer<DragEnd>>::default(),

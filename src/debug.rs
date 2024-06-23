@@ -101,6 +101,7 @@ impl Plugin for DebugPickingPlugin {
                     log_pointer_event_debug::<events::Down>,
                     log_pointer_event_debug::<events::Up>,
                     log_pointer_event_debug::<events::Click>,
+                    log_pointer_event_debug::<events::Scroll>,
                     log_pointer_event_trace::<events::Move>.run_if(DebugPickingMode::is_noisy),
                     log_pointer_event_debug::<events::DragStart>,
                     log_pointer_event_trace::<events::Drag>.run_if(DebugPickingMode::is_noisy),

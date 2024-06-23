@@ -1,13 +1,17 @@
 //! Provides sensible defaults for mouse picking inputs.
 
 use bevy_ecs::prelude::*;
-use bevy_input::{mouse::MouseButtonInput, prelude::*, ButtonState};
+use bevy_input::{
+    mouse::{MouseButtonInput, MouseWheel},
+    prelude::*,
+    ButtonState,
+};
 use bevy_math::Vec2;
 use bevy_render::camera::RenderTarget;
 use bevy_window::{CursorMoved, PrimaryWindow, Window, WindowRef};
 
 use bevy_picking_core::{
-    pointer::{InputMove, InputPress, Location, PointerButton, PointerId},
+    pointer::{InputMove, InputPress, InputScroll, Location, PointerButton, PointerId},
     PointerCoreBundle,
 };
 
@@ -27,9 +31,11 @@ pub fn mouse_pick_events(
     mut cursor_moves: EventReader<CursorMoved>,
     mut cursor_last: Local<Vec2>,
     mut mouse_inputs: EventReader<MouseButtonInput>,
+    mut mouse_scrolls: EventReader<MouseWheel>,
     // Output
     mut pointer_move: EventWriter<InputMove>,
     mut pointer_presses: EventWriter<InputPress>,
+    mut pointer_scrolls: EventWriter<InputScroll>,
 ) {
     for event in cursor_moves.read() {
         pointer_move.send(InputMove::new(
@@ -68,6 +74,19 @@ pub fn mouse_pick_events(
             ButtonState::Released => {
                 pointer_presses.send(InputPress::new_up(PointerId::Mouse, button));
             }
+        }
+    }
+
+    for input in mouse_scrolls.read() {
+        if input.x < 0.0 {
+            pointer_scrolls.send(InputScroll::new_left(PointerId::Mouse));
+        } else if input.x > 0.0 {
+            pointer_scrolls.send(InputScroll::new_right(PointerId::Mouse));
+        }
+        if input.y < 0.0 {
+            pointer_scrolls.send(InputScroll::new_down(PointerId::Mouse));
+        } else if input.y > 0.0 {
+            pointer_scrolls.send(InputScroll::new_up(PointerId::Mouse));
         }
     }
 }

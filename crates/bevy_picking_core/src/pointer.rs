@@ -269,6 +269,124 @@ impl InputMove {
     }
 }
 
+/// The stage of the pointer button press event
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Reflect)]
+pub enum ScrollDirection {
+    /// The pointer just scrolled down
+    Down,
+    /// The pointer just scrolled up
+    Up,
+    /// The pointer just scrolled right
+    Right,
+    /// The pointer just scrolled left
+    Left,
+}
+/// Tracks the state of the pointer's buttons in response to [`InputPress`]s.
+#[derive(Debug, Default, Clone, Component, Reflect, PartialEq, Eq)]
+#[reflect(Component, Default)]
+pub struct PointerScroll {
+    direction: Option<ScrollDirection>,
+}
+impl PointerScroll {
+    /// TODO Returns true if the primary pointer button is pressed.
+    #[inline]
+    pub fn direction(&self) -> Option<&ScrollDirection> {
+        self.direction.as_ref()
+    }
+
+    /// TODO Returns true if the primary pointer button is pressed.
+    #[inline]
+    pub fn is_down(&self) -> bool {
+        self.direction == Some(ScrollDirection::Down)
+    }
+
+    /// TODO Returns true if the primary pointer button is pressed.
+    #[inline]
+    pub fn is_up(&self) -> bool {
+        self.direction == Some(ScrollDirection::Up)
+    }
+
+    /// TODO Returns true if the primary pointer button is pressed.
+    #[inline]
+    pub fn is_left(&self) -> bool {
+        self.direction == Some(ScrollDirection::Left)
+    }
+
+    /// TODO Returns true if the primary pointer button is pressed.
+    #[inline]
+    pub fn is_right(&self) -> bool {
+        self.direction == Some(ScrollDirection::Right)
+    }
+}
+
+/// Pointer input event for mouse wheel scrolls. Fires when a pointer scrolls a direction.
+#[derive(Event, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
+pub struct InputScroll {
+    /// The [`PointerId`] of the pointer that scrolled.
+    pub pointer_id: PointerId,
+    /// Direction of the scroll.
+    pub direction: ScrollDirection,
+}
+impl InputScroll {
+    /// TODO Create a new pointer button down event.
+    pub fn new_down(id: PointerId) -> InputScroll {
+        Self {
+            pointer_id: id,
+            direction: ScrollDirection::Down,
+        }
+    }
+
+    /// TODO Create a new pointer button up event.
+    pub fn new_up(id: PointerId) -> InputScroll {
+        Self {
+            pointer_id: id,
+            direction: ScrollDirection::Up,
+        }
+    }
+
+    /// TODO Create a new pointer button up event.
+    pub fn new_right(id: PointerId) -> InputScroll {
+        Self {
+            pointer_id: id,
+            direction: ScrollDirection::Right,
+        }
+    }
+
+    /// TODO Create a new pointer button up event.
+    pub fn new_left(id: PointerId) -> InputScroll {
+        Self {
+            pointer_id: id,
+            direction: ScrollDirection::Left,
+        }
+    }
+
+    /// TODO Returns true if the `button` of this pointer was just pressed.
+    #[inline]
+    pub fn is_just_down(&self) -> bool {
+        self.direction == ScrollDirection::Down
+    }
+
+    /// TODO Returns true if the `button` of this pointer was just released.
+    #[inline]
+    pub fn is_just_up(&self) -> bool {
+        self.direction == ScrollDirection::Up
+    }
+
+    /// TODO Receives [`InputPress`] events and updates corresponding [`PointerPress`] components.
+    pub fn receive(
+        mut events: EventReader<InputScroll>,
+        mut pointers: Query<(&PointerId, &mut PointerScroll)>,
+    ) {
+        for input_scroll_event in events.read() {
+            pointers.iter_mut().for_each(|(pointer_id, mut pointer)| {
+                if *pointer_id == input_scroll_event.pointer_id {
+                    pointer.direction = Some(input_scroll_event.direction);
+                }
+            })
+        }
+    }
+}
+
 /// The location of a pointer, including the current [`NormalizedRenderTarget`], and the x/y
 /// position of the pointer on this render target.
 ///

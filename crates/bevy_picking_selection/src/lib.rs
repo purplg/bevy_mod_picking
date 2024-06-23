@@ -16,7 +16,7 @@ use bevy_utils::hashbrown::HashSet;
 use bevy_eventlistener::prelude::*;
 
 use bevy_picking_core::{
-    events::{Click, Down, Pointer},
+    events::{Click, Down, Scroll, Pointer},
     pointer::{InputPress, PointerButton, PointerId, PointerLocation},
     PickSet, PickingPluginsSettings,
 };
